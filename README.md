@@ -11,6 +11,7 @@ Also you can change additional settings with using this repo and SDK Document(ht
 
 To Run repo
 
+First be sure all .py files in scripts are executable (chmod +x)
 ```
 cd flir_boson
 catkin build
