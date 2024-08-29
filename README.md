@@ -2,8 +2,6 @@
 
 Ros package for Flir Boson &amp; Boson+ thermal camera with dynamic reconfiguration. It is tested with ROS Noetic
 
-![left-0036](https://github.com/user-attachments/assets/581fc966-151e-4809-8ea8-e9128283f97a)
-![76002131-0ac2-43e9-8ecf-79a44db368d8](https://github.com/user-attachments/assets/7f812c83-d3d6-4735-8b5e-70dca742a80e)
 
 Based on https://github.com/astuff/flir_boson_usb
 
@@ -18,13 +16,11 @@ cd flir_boson
 catkin build
 source devel/setup.bas
 ```
-
-
+![76002131-0ac2-43e9-8ecf-79a44db368d8](https://github.com/user-attachments/assets/7f812c83-d3d6-4735-8b5e-70dca742a80e)
 * In First Terminal (to run camera and get output )
 ```
 roslaunch flir_boson_usb flir_boson.launch 
 ```
-
 check line 6 if it is not work
 ```
   <!-- the linux file descriptor location for the camera -->
@@ -46,4 +42,5 @@ rosrun flir_boson_usb doFFC.py
 ```
 
 ![5823291001685526150](https://github.com/user-attachments/assets/3f96f0c2-acf3-4fcf-bc41-927cf51fc043)
+![left-0036](https://github.com/user-attachments/assets/581fc966-151e-4809-8ea8-e9128283f97a)
 
