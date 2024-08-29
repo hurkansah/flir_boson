@@ -1,6 +1,6 @@
 # flir_boson
 
-Ros package for Flir Boson &amp; Boson+ thermal camera with dynamic reconfiguration
+Ros package for Flir Boson &amp; Boson+ thermal camera with dynamic reconfiguration. It is tested with ROS Noetic
 
 Based on https://github.com/astuff/flir_boson_usb
 
@@ -12,6 +12,7 @@ To Run repo
 
 ```
 cd flir_boson
+catkin build
 source devel/setup.bas
 ```
 
