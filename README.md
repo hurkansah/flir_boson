@@ -1,7 +1,7 @@
 # flir_boson
 ![5823291001685526150](https://github.com/user-attachments/assets/3f96f0c2-acf3-4fcf-bc41-927cf51fc043)
 
-Ros package for Flir Boson &amp; Boson+ thermal camera with dynamic reconfiguration. It is tested with ROS Noetic
+Ros package for Flir Boson &amp; Boson+ thermal camera with dynamic reconfiguration. It is tested with ROS Noetic and Flir Boson+
 
 Based on https://github.com/astuff/flir_boson_usb
 
