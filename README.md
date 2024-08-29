@@ -15,7 +15,7 @@ First be sure all .py files in scripts are executable (chmod +x)
 ```
 cd flir_boson
 catkin build
-source devel/setup.bas
+source devel/setup.bash
 ```
 ![76002131-0ac2-43e9-8ecf-79a44db368d8](https://github.com/user-attachments/assets/7f812c83-d3d6-4735-8b5e-70dca742a80e)
 * In First Terminal (to run camera and get output )
