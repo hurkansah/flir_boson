@@ -1,0 +1,10 @@
+LIBRARY FSLP_64.dll
+
+EXPORTS
+FSLP_check_data_ready
+FSLP_close_port
+FSLP_lookup_port_id
+FSLP_open_port
+FSLP_read_frame
+FSLP_read_unframed
+FSLP_send_to_camera
