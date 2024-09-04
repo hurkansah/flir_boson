@@ -9,10 +9,12 @@ ROS package combined with Boson SDK package(https://flir.netx.net/file/asset/460
 Also you can change additional settings with using this repo and SDK Document(https://flir.netx.net/file/asset/12950/original/attachment)
 
 Requisation:
+```
 sudo apt-get update
 sudo apt-get install v4l-utils
 sudo apt-get install python3-opencv
 sudo chmod a+rwx /dev/ttyACM0
+```
 
 To Run repo
 
