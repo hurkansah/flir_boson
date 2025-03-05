@@ -8,12 +8,34 @@ Based on https://github.com/astuff/flir_boson_usb
 ROS package combined with Boson SDK package(https://flir.netx.net/file/asset/46046/original/attachment) so the camera parameters like in GUI can be changable with using Dynamic Reconfiguration.
 Also you can change additional settings with using this repo and SDK Document(https://flir.netx.net/file/asset/12950/original/attachment)
 
-Requisation:
+Prerequisite:
 ```
 sudo apt-get update
 sudo apt-get install v4l-utils
 sudo apt-get install python3-opencv
 sudo chmod a+rwx /dev/ttyACM0
+```
+
+Recompile FSLP_64.so file for the target system (here presumably aarch64. If x86_64 is used, add flag "-m64" into gcc command lines):
+
+```
+cd <../boson/FSLP_Files>
+mkdir obj
+gcc -g -fPIC  -shared -c -o obj/flirCRC_Linux64.o src/flirCRC.c -I./src/inc
+gcc -g -fPIC  -shared -c -o obj/FSLP_Linux64.o src/FSLP.c -I./src/inc
+gcc -g -fPIC  -shared -c -o obj/flirChannels_Linux64.o src/flirChannels.c -I./src/
+gcc -g -fPIC  -shared -c -o obj/timeoutLogic_Linux64.o src/timeoutLogic.c -I./src/inc
+gcc -g -fPIC  -shared -c -o obj/serialPort_Linux64.o src/linux/serial.c -I./src/inc
+gcc -g -fPIC  -shared -c -o obj/serialPortAdapter_Linux64.o src/linux/serialPortAdapter.c -I./src/inc
+gcc -g -fPIC  -shared -o FSLP_64.so obj/flirCRC_Linux64.o obj/FSLP_Linux64.o obj/flirChannels_Linux64.o obj/timeoutLogic_Linux64.o obj/serialPort_Linux64.o obj/serialPortAdapter_Linux64.o 
+```
+check the file afterward to be sure it is correctly compiled:
+```
+file FSLP_64.so
+```
+It should says: 
+```
+FSLP_64.so: ELF 64-bit LSB shared object, ARM aarch64, version 1 (SYSV), dynamically linked
 ```
 
 To Run repo
@@ -50,3 +72,16 @@ rosrun flir_boson_usb doFFC.py
 ```
 ![left-0036](https://github.com/user-attachments/assets/581fc966-151e-4809-8ea8-e9128283f97a)
 
+
+## Known issues
+
+1. Failed to set camera parameters: Failed to open port #16 with error 255
+
+Serial connection is not allowed. To do that, add "dialout" to the current groups:
+```
+sudo usermod -a -G dialout $USER
+```
+and log out.
+
+2. ERROR: OPEN. Invalid Video Device
+Camera is not connected. Check cable

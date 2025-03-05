@@ -26,7 +26,7 @@
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "Boson Camera Node");
+  ros::init(argc, argv, "Boson_Camera_Node");
   nodelet::Loader nodelet;
   nodelet::M_string remap(ros::names::getRemappings());
   nodelet::V_string nargv;

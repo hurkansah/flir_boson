@@ -64,7 +64,7 @@ $(OBJDIR)/%_Linux32.o: src/%.c  $(ALLDEPS)
 	$(CC) -g -fPIC $(WARNINGS) -shared -m32 -c -o $@ $< $(CFLAGS)
 
 $(OBJDIR)/%_Linux64.o: src/%.c  $(ALLDEPS)
-	$(CC) -g -fPIC $(WARNINGS) -shared -m64 -c -o $@ $< $(CFLAGS)
+	$(CC) -g -fPIC $(WARNINGS) -shared  -c -o $@ $< $(CFLAGS)
 
 $(OBJDIR)/%_32.o: src/win32/serialPortAdapter.c  $(ALLDEPS)
 	$(CC) $(WARNINGS) -c -o $@ $< $(CFLAGS)
@@ -76,7 +76,7 @@ $(OBJDIR)/%_Linux32.o: src/linux/serialPortAdapter.c   $(ALLDEPS)
 	$(CC) -g -fPIC $(WARNINGS) -shared -m32 -c -o $@ $< $(CFLAGS)
 
 $(OBJDIR)/%_Linux64.o: src/linux/serialPortAdapter.c  $(ALLDEPS)
-	$(CC) -g -fPIC $(WARNINGS) -shared -m64 -c -o $@ $< $(CFLAGS)
+	$(CC) -g -fPIC $(WARNINGS) -shared  -c -o $@ $< $(CFLAGS)
 
 $(OBJDIR)/serialPort_32.o: src/win32/$(WIN32_SERIAL)  $(ALLDEPS)
 #	$(error "Windows library still under development")
@@ -92,20 +92,20 @@ $(OBJDIR)/serialPort_Linux32.o: src/linux/$(LINUX_SERIAL)  $(ALLDEPS)
 # used to need this added when accidental namespace collision existed
 #-Derror=weird_name_to_resolve_name_conflict_error
 $(OBJDIR)/serialPort_Linux64.o: src/linux/$(LINUX_SERIAL) $(ALLDEPS)
-	$(CC) -g -fPIC $(WARNINGS) -shared -m64 -c -o $@ $< $(CFLAGS) 
+	$(CC) -g -fPIC $(WARNINGS) -shared  -c -o $@ $< $(CFLAGS) 
 	
 
 FSLP_32.dll: $(ALLOBJ32) $(OBJDIR)/serialPort_32.o $(OBJDIR)/serialPortAdapter_32.o
 	$(CC) $(WARNINGS) -static-libgcc -shared -o $@ $^ 
 
 FSLP_64.dll: $(ALLOBJ64) $(OBJDIR)/serialPort_64.o  $(OBJDIR)/serialPortAdapter_64.o
-	$(CCwin64) -v -shared -m64 -o $@ $^ 
+	$(CCwin64) -v -shared  -o $@ $^ 
 
 FSLP_32.so: $(ALLOBJ32_LINUX) $(OBJDIR)/serialPort_Linux32.o $(OBJDIR)/serialPortAdapter_Linux32.o
 	$(CC) -g -fPIC $(WARNINGS) -shared -m32 -o $@ $^ 
 
 FSLP_64.so: $(ALLOBJ64_LINUX) $(OBJDIR)/serialPort_Linux64.o $(OBJDIR)/serialPortAdapter_Linux64.o
-	$(CC) -g -fPIC $(WARNINGS) -shared -m64 -o $@ $^ 
+	$(CC) -g -fPIC $(WARNINGS) -shared  -o $@ $^ 
 
 .PHONY: clean
 clean:

@@ -355,6 +355,9 @@ void BosonCamera::captureAndPublish(const ros::TimerEvent& evt)
     // RAW16 DATA
     agcBasicLinear(thermal16, &thermal16_linear, height, width);
 
+    std::cout <<"HUYYYYYY: thing is fine here" <<std::endl;
+
+
     // Display thermal after 16-bits AGC... will display an image
     if (!zoom_enable)
     {
@@ -386,6 +389,7 @@ void BosonCamera::captureAndPublish(const ros::TimerEvent& evt)
 
       ci->header.stamp = pub_image->header.stamp;
       image_pub.publish(pub_image, ci);
+
     }
     else
     {
