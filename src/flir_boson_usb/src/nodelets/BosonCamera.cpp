@@ -353,10 +353,8 @@ void BosonCamera::captureAndPublish(const ros::TimerEvent& evt)
   {
     // -----------------------------
     // RAW16 DATA
+
     agcBasicLinear(thermal16, &thermal16_linear, height, width);
-
-    std::cout <<"HUYYYYYY: thing is fine here" <<std::endl;
-
 
     // Display thermal after 16-bits AGC... will display an image
     if (!zoom_enable)
@@ -366,6 +364,10 @@ void BosonCamera::captureAndPublish(const ros::TimerEvent& evt)
       threshold(thermal16_linear, mask_mat, 0, 255, CV_THRESH_BINARY|CV_THRESH_OTSU);
       thermal16_linear.copyTo(masked_img, mask_mat);
 
+
+      // This block of code is doing nothing at the moment, and will give you an error at getStructuringElement
+      /*
+      
       // Normalize the pixel values to the range [0, 1] then raise to power (gamma). Then convert back for display.
       Mat d_out_img, norm_image, d_norm_image, gamma_corrected_image, d_gamma_corrected_image;
       double gamma = 0.8;
@@ -377,9 +379,16 @@ void BosonCamera::captureAndPublish(const ros::TimerEvent& evt)
 
       // Apply top hat filter
       int erosion_size = 5;
+
+      try {
       Mat top_hat_img, kernel = getStructuringElement(MORPH_ELLIPSE,
           Size(2 * erosion_size + 1, 2 * erosion_size + 1));
       morphologyEx(gamma_corrected_image, top_hat_img, MORPH_TOPHAT, kernel);
+      }
+      catch(int error){
+        ROS_ERROR(error);
+      }
+      */
 
       cv_img.image = thermal16_linear;
       cv_img.header.stamp = ros::Time::now();
@@ -388,6 +397,7 @@ void BosonCamera::captureAndPublish(const ros::TimerEvent& evt)
       pub_image = cv_img.toImageMsg();
 
       ci->header.stamp = pub_image->header.stamp;
+
       image_pub.publish(pub_image, ci);
 
     }
@@ -402,6 +412,7 @@ void BosonCamera::captureAndPublish(const ros::TimerEvent& evt)
       pub_image = cv_img.toImageMsg();
 
       ci->header.stamp = pub_image->header.stamp;
+
       image_pub.publish(pub_image, ci);
     }
   }
