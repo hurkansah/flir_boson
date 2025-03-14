@@ -1,25 +1,13 @@
 /*
- * Copyright © 2019 AutonomouStuff, LLC
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this
- * software and associated documentation files (the “Software”), to deal in the Software
- * without restriction, including without limitation the rights to use, copy, modify,
- * merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in all copies
- * or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
- * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
- * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
- * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
- * OR OTHER DEALINGS IN THE SOFTWARE.
+
  */
 
 #include <pluginlib/class_list_macros.h>
 #include "flir_boson_usb/BosonCamera.h"
+#include <sensor_msgs/image_encodings.h>
+#include <cv_bridge/cv_bridge.h>
+#include <opencv2/opencv.hpp>
+#include <ros/ros.h>
 
 PLUGINLIB_EXPORT_CLASS(flir_boson_usb::BosonCamera, nodelet::Nodelet)
 
@@ -326,6 +314,7 @@ bool BosonCamera::closeCamera()
   return true;
 }
 
+
 void BosonCamera::captureAndPublish(const ros::TimerEvent& evt)
 {
   Size size(640, 512);
@@ -349,57 +338,31 @@ void BosonCamera::captureAndPublish(const ros::TimerEvent& evt)
     return;
   }
 
-  if (video_mode == RAW16)
-  {
+// Assuming 'cv_img', 'ci', 'image_pub', and other necessary variables are already defined.
+
+
+if (video_mode == RAW16)
+{
     // -----------------------------
-    // RAW16 DATA
+    // RAW16 DATA Processing
 
-    agcBasicLinear(thermal16, &thermal16_linear, height, width);
+    //agcBasicLinear(thermal16, &k, height, width);
+    cv::Mat thermal16_raw = Mat(height, width, CV_16U, 1);
+    thermal16.copyTo(thermal16_raw) ;
 
-    // Display thermal after 16-bits AGC... will display an image
+    // Display thermal after 16-bit AGC... will display an image
     if (!zoom_enable)
     {
-      // Threshold using Otsu's method, then use the result as a mask on the original image
-      Mat mask_mat, masked_img;
-      threshold(thermal16_linear, mask_mat, 0, 255, CV_THRESH_BINARY|CV_THRESH_OTSU);
-      thermal16_linear.copyTo(masked_img, mask_mat);
+        // Publish as "mono16"
+        cv_bridge::CvImage cv_img_mono16;
+        cv_img_mono16.image = thermal16_raw;
+        cv_img_mono16.header.stamp = ros::Time::now();
+        cv_img_mono16.encoding = "mono16"; // Explicitly use "mono16"
 
-
-      // This block of code is doing nothing at the moment, and will give you an error at getStructuringElement
-      /*
-      
-      // Normalize the pixel values to the range [0, 1] then raise to power (gamma). Then convert back for display.
-      Mat d_out_img, norm_image, d_norm_image, gamma_corrected_image, d_gamma_corrected_image;
-      double gamma = 0.8;
-      masked_img.convertTo(d_out_img, CV_64FC1);
-      normalize(d_out_img, d_norm_image, 0, 1, NORM_MINMAX, CV_64FC1);
-      pow(d_out_img, gamma, d_gamma_corrected_image);
-      d_gamma_corrected_image.convertTo(gamma_corrected_image, CV_8UC1);
-      normalize(gamma_corrected_image, gamma_corrected_image, 0, 255, NORM_MINMAX, CV_8UC1);
-
-      // Apply top hat filter
-      int erosion_size = 5;
-
-      try {
-      Mat top_hat_img, kernel = getStructuringElement(MORPH_ELLIPSE,
-          Size(2 * erosion_size + 1, 2 * erosion_size + 1));
-      morphologyEx(gamma_corrected_image, top_hat_img, MORPH_TOPHAT, kernel);
-      }
-      catch(int error){
-        ROS_ERROR(error);
-      }
-      */
-
-      cv_img.image = thermal16_linear;
-      cv_img.header.stamp = ros::Time::now();
-      cv_img.header.frame_id = frame_id;
-      cv_img.encoding = "mono8";
-      pub_image = cv_img.toImageMsg();
-
-      ci->header.stamp = pub_image->header.stamp;
-
-      image_pub.publish(pub_image, ci);
-
+        // Convert to ROS Image message and publish
+        sensor_msgs::ImagePtr pub_image_mono16 = cv_img_mono16.toImageMsg();
+        image_pub.publish(pub_image_mono16, ci);
+        ROS_INFO("Thermal image published successfully.");
     }
     else
     {
