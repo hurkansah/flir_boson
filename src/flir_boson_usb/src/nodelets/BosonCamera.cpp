@@ -51,6 +51,12 @@ void BosonCamera::onInit()
   ROS_INFO("flir_boson_usb - Got sensor type: %s.", sensor_type_str.c_str());
   ROS_INFO("flir_boson_usb - Got camera_info_url: %s.", camera_info_url.c_str());
 
+  // low res for visualization through the network
+  it_low_res = std::shared_ptr<image_transport::ImageTransport>(new image_transport::ImageTransport(nh));
+  image_pub_low_res = it_low_res->advertiseCamera("image_raw_low_res", 1);
+  pnh.param<bool>("pub_low_res_enable", pub_low_res_enable, true);
+  ROS_INFO("pub_low_res_enable = ", pub_low_res_enable);
+
   if (video_mode_str == "RAW16")
   {
     video_mode = RAW16;
@@ -341,14 +347,44 @@ void BosonCamera::captureAndPublish(const ros::TimerEvent& evt)
 // Assuming 'cv_img', 'ci', 'image_pub', and other necessary variables are already defined.
 
 
-if (video_mode == RAW16)
-{
+  if (video_mode == RAW16)
+  {
     // -----------------------------
     // RAW16 DATA Processing
 
     //agcBasicLinear(thermal16, &k, height, width);
     cv::Mat thermal16_raw = Mat(height, width, CV_16U, 1);
     thermal16.copyTo(thermal16_raw) ;
+
+      // // public low res image
+      // if (pub_low_res_enable)
+      // {
+      //   // Size size_low_res(640/4, 512/4);
+      //   Size size_low_res(80, 64);
+      //   ROS_INFO("size_low_res = ");
+      //   std::cout << "size" << std::endl;
+
+      //   cv::Mat img8U;
+      //   cv::normalize(thermal16_raw, img8U, 0, 255, cv::NORM_MINMAX); // Normalize the pixel values to 0-255 range
+      //   img8U.convertTo(img8U, CV_8U); // Convert to 8-bit unsigned format
+
+      //   // Resize the image by half
+      //   // cv::Mat resizedImg;
+      //   // cv::resize(img8U, resizedImg, cv::Size(img8U.cols / 2, img8U.rows / 2));
+
+      //   cv_img.image = img8U;
+      //   // cv_img.image = resizedImg;
+      //   cv_img.header.stamp = ros::Time::now();
+      //   cv_img.header.frame_id = frame_id;
+      //   cv_img.encoding = "mono8";
+      //   pub_image_low_res = cv_img.toImageMsg();
+
+      //   ci->header.stamp = pub_image_low_res->header.stamp;
+
+      //   image_pub_low_res.publish(pub_image_low_res, ci);
+      //   ROS_INFO("Publish Low Res for Visualization successfully.");
+
+      // }
 
     // Display thermal after 16-bit AGC... will display an image
     if (!zoom_enable)
@@ -363,6 +399,7 @@ if (video_mode == RAW16)
         sensor_msgs::ImagePtr pub_image_mono16 = cv_img_mono16.toImageMsg();
         image_pub.publish(pub_image_mono16, ci);
         ROS_INFO("Thermal image published successfully.");
+
     }
     else
     {
@@ -394,4 +431,5 @@ if (video_mode == RAW16)
     ci->header.stamp = pub_image->header.stamp;
     image_pub.publish(pub_image, ci);
   }
+
 }
