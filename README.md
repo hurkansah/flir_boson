@@ -5,7 +5,7 @@ Ros package for Flir Boson &amp; Boson+ thermal camera with dynamic reconfigurat
 
 Based on https://github.com/astuff/flir_boson_usb
 
-ROS package combined with Boson SDK package(https://flir.netx.net/file/asset/46046/original/attachment) so the camera parameters like in GUI can be changable with using Dynamic Reconfiguration.
+ROS package combined with Boson SDK package(https://flir.netx.net/file/asset/46046/original/attachment) so the camera parameters like in GUI for 8-bit image can be changable with using Dynamic Reconfiguration. Also, you can set thermal image output to 16 bit raw thermal image.
 Also you can change additional settings with using this repo and SDK Document(https://flir.netx.net/file/asset/12950/original/attachment)
 
 Prerequisite:
