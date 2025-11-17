@@ -1,87 +1,137 @@
-# flir_boson
-![5823291001685526150](https://github.com/user-attachments/assets/3f96f0c2-acf3-4fcf-bc41-927cf51fc043)
+# FLIR Boson ROS2 Driver
 
-Ros package for Flir Boson &amp; Boson+ thermal camera with dynamic reconfiguration. It is tested with ROS Noetic and Flir Boson+
+ROS2 driver for FLIR Boson / Boson+ thermal cameras.  
+Provides RAW16 image streaming via V4L2 and full AGC parameter control through the Boson SDK.
 
-Based on https://github.com/astuff/flir_boson_usb
+**For the ROS1 version, see the [`main` branch](https://github.com/hurkansah/flir_boson/tree/main).**  
+This branch contains the **ROS2 implementation** only.
 
-ROS package combined with Boson SDK package(https://flir.netx.net/file/asset/46046/original/attachment) so the camera parameters like in GUI for 8-bit image can be changable with using Dynamic Reconfiguration. Also, you can set thermal image output to 16 bit raw thermal image.
-Also you can change additional settings with using this repo and SDK Document(https://flir.netx.net/file/asset/12950/original/attachment)
+---
 
-Prerequisite:
-```
-sudo apt-get update
-sudo apt-get install v4l-utils
-sudo apt-get install python3-opencv
-sudo chmod a+rwx /dev/ttyACM0
-```
+## Features
 
-Recompile FSLP_64.so file for the target system (here presumably aarch64. If x86_64 is used, add flag "-m64" into gcc command lines):
+- RAW16 thermal image stream (`/image_raw`, 640×512, mono16) or YUV for 8-bit output
+- `sensor_msgs/Image` + `CameraInfo` publishing
+- Integrated Boson SDK (FSLP) for runtime AGC control
+- ROS2 parameter interface (`camera_conf_node`)
+- Works on Jetson Xavier (aarch64) — requires rebuilding `FSLP_64.so`
+- Compatible with Foxy, Humble
 
-```
-cd <../boson/FSLP_Files>
-mkdir obj
-gcc -g -fPIC  -shared -c -o obj/flirCRC_Linux64.o src/flirCRC.c -I./src/inc
-gcc -g -fPIC  -shared -c -o obj/FSLP_Linux64.o src/FSLP.c -I./src/inc
-gcc -g -fPIC  -shared -c -o obj/flirChannels_Linux64.o src/flirChannels.c -I./src/
-gcc -g -fPIC  -shared -c -o obj/timeoutLogic_Linux64.o src/timeoutLogic.c -I./src/inc
-gcc -g -fPIC  -shared -c -o obj/serialPort_Linux64.o src/linux/serial.c -I./src/inc
-gcc -g -fPIC  -shared -c -o obj/serialPortAdapter_Linux64.o src/linux/serialPortAdapter.c -I./src/inc
-gcc -g -fPIC  -shared -o FSLP_64.so obj/flirCRC_Linux64.o obj/FSLP_Linux64.o obj/flirChannels_Linux64.o obj/timeoutLogic_Linux64.o obj/serialPort_Linux64.o obj/serialPortAdapter_Linux64.o 
-```
-check the file afterward to be sure it is correctly compiled:
-```
-file FSLP_64.so
-```
-It should says: 
-```
-FSLP_64.so: ELF 64-bit LSB shared object, ARM aarch64, version 1 (SYSV), dynamically linked
+---
+
+## Build (colcon)
+
+```bash
+cd ~/flir_ws/src
+git clone https://github.com/hurkansah/flir_boson.git
+cd ~/flir_ws
+colcon build --packages-select flir_boson_usb --symlink-install
+source install/setup.bash
 ```
 
-To Run repo
+Make all Python scripts executable:
 
-First be sure all .py files in scripts are executable (chmod +x)
-```
-cd flir_boson
-catkin build
-source devel/setup.bash
-```
-![76002131-0ac2-43e9-8ecf-79a44db368d8](https://github.com/user-attachments/assets/7f812c83-d3d6-4735-8b5e-70dca742a80e)
-* In First Terminal (to run camera and get output )
-```
-roslaunch flir_boson_usb flir_boson.launch 
-```
-check line 6 if it is not work
-```
-  <!-- the linux file descriptor location for the camera -->
-  <arg name="dev" default="/dev/video0"/>
-because if you have more than one camera (for laptop esp) video input can be different 
-try <arg name="dev" default="/dev/video2"/> for laptops or <arg name="dev" default="/dev/video1"/>
+```bash
+chmod +x flir_boson_usb/flir_boson_usb/scripts/*.py
 ```
 
-* In Second Terminal ( Optional if you want to see video output)
-```
-rosrun flir_boson_usb thermal_image_listener.py 
-or (with ironbow color palette)
-rosrun flir_boson_usb thermal_image_ironbow.py 
+---
+
+## Running
+
+```bash
+sudo chmod 777 /dev/ttyACM0 
+ros2 launch flir_boson_usb boson.launch.py
 ```
 
-* You can run FFC with this command
+Published topics:
+
+- `/image_raw` — RAW16 thermal image  
+- `/camera_info` — Camera calibration  
+- `/camera_conf` — AGC parameter interface
+
+---
+
+## Selecting the correct V4L2 device
+
+List all connected video devices:
+
+```bash
+v4l2-ctl --list-devices
 ```
-rosrun flir_boson_usb doFFC.py 
+
+Example:
+
 ```
-![left-0036](https://github.com/user-attachments/assets/581fc966-151e-4809-8ea8-e9128283f97a)
-
-
-## Known issues
-
-1. Failed to set camera parameters: Failed to open port #16 with error 255
-
-Serial connection is not allowed. To do that, add "dialout" to the current groups:
+FLIR Boson:
+    /dev/video2
 ```
-sudo usermod -a -G dialout $USER
-```
-and log out.
 
-2. ERROR: OPEN. Invalid Video Device
-Camera is not connected. Check cable
+Then launch using the detected device:
+
+```bash
+ros2 launch flir_boson_usb boson.launch.py dev:=/dev/video2
+```
+
+---
+
+## Rebuilding `FSLP_64.so` (Boson SDK) for Jetson aarch64
+
+```bash
+cd flir_boson_usb/flir_boson_usb/scripts/boson/FSLP_Files
+mkdir -p obj
+
+gcc -g -fPIC -shared -c -o obj/flirCRC_Linux64.o          src/flirCRC.c           -I./src/inc
+gcc -g -fPIC -shared -c -o obj/FSLP_Linux64.o             src/FSLP.c              -I./src/inc
+gcc -g -fPIC -shared -c -o obj/flirChannels_Linux64.o     src/flirChannels.c      -I./src/inc
+gcc -g -fPIC -shared -c -o obj/timeoutLogic_Linux64.o     src/timeoutLogic.c      -I./src/inc
+gcc -g -fPIC -shared -c -o obj/serialPort_Linux64.o       src/linux/serial.c      -I./src/inc
+gcc -g -fPIC -shared -c -o obj/serialPortAdapter_Linux64.o src/linux/serialPortAdapter.c -I./src/inc
+
+gcc -g -fPIC -shared -o FSLP_64.so     obj/flirCRC_Linux64.o     obj/FSLP_Linux64.o     obj/flirChannels_Linux64.o     obj/timeoutLogic_Linux64.o     obj/serialPort_Linux64.o     obj/serialPortAdapter_Linux64.o
+```
+
+---
+
+## Runtime AGC Parameters (via `camera_conf_node`, only for YUV (8-bit))
+
+List and modify parameters:
+
+```bash
+ros2 param list /camera_conf
+ros2 param get  /camera_conf MaxGain
+ros2 param set  /camera_conf MaxGain 2.0
+```
+
+Supported parameters:
+
+- OutlierCut  
+- MaxGain  
+- DF  
+- Gamma  
+- PercentPerBin  
+- LinearPercent  
+- DetailHeadroom  
+- d2br  
+- SigmaR  
+- OutlierCutBalance  
+
+Each parameter is forwarded directly to the Boson via SDK calls.
+
+---
+
+## Viewing the thermal image
+
+```bash
+ros2 run rqt_image_view rqt_image_view
+```
+
+Select `/image_raw`.  
+The image is **mono16**; you may apply normalization or colormaps depending on your visualization pipeline.
+
+---
+
+## License
+
+MIT License  
+Copyright © 2025 Hürkan Şahin
