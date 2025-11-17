@@ -102,7 +102,10 @@ ros2 param list /camera_conf
 ros2 param get  /camera_conf MaxGain
 ros2 param set  /camera_conf MaxGain 2.0
 ```
-
+or you can use:
+```bash
+ros2 run rqt_reconfigure rqt_reconfigure
+```
 Supported parameters:
 
 - OutlierCut  
