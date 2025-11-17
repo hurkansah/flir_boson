@@ -1,90 +1,64 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.10)
 project(flir_boson_usb)
 
-add_compile_options(-std=c++11)
+# C++ standard
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
 
-find_package(catkin REQUIRED
-  COMPONENTS
-  roscpp
-  rospy
-  nodelet
-  cv_bridge
-  image_transport
-  sensor_msgs
-  camera_info_manager
-  roslint
-  dynamic_reconfigure
-)
-
+# Ament + depend.
+find_package(ament_cmake REQUIRED)
+find_package(ament_cmake_python REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(cv_bridge REQUIRED)
+find_package(camera_info_manager REQUIRED)
 find_package(OpenCV REQUIRED)
-
-generate_dynamic_reconfigure_options(
-  cfg/Camera.cfg
-)
-
-catkin_package(
-  CATKIN_DEPENDS
-  rospy
-  camera_info_manager
-  image_transport
-  cv_bridge
-  nodelet
-  sensor_msgs
-  dynamic_reconfigure
-)
 
 include_directories(
   include
   ${OpenCV_INCLUDE_DIRS}
-  ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(${PROJECT_NAME}_node
-  src/flir_boson_usb_node.cpp
+add_executable(boson_camera_node
+  src/boson_camera_node.cpp
 )
 
-add_dependencies(${PROJECT_NAME}_node
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
+ament_target_dependencies(boson_camera_node
+  rclcpp
+  sensor_msgs
+  cv_bridge
+  camera_info_manager
+  OpenCV
 )
 
-target_link_libraries(${PROJECT_NAME}_node
+target_link_libraries(boson_camera_node
   ${OpenCV_LIBRARIES}
-  ${catkin_LIBRARIES}
 )
 
-add_library(BosonCamera
-  src/nodelets/BosonCamera.cpp
-)
-
-add_dependencies(BosonCamera
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
-)
-
-target_link_libraries(BosonCamera
-  ${OpenCV_LIBRARIES}
-  ${catkin_LIBRARIES}
-)
-
-set(ROSLINT_CPP_OPTS "--filter=-runtime/threadsafe_fn,-build/namespaces,-build/include_what_you_use")
-roslint_cpp()
-
-install(TARGETS ${PROJECT_NAME}_node BosonCamera
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+install(TARGETS boson_camera_node
+  DESTINATION lib/${PROJECT_NAME}
 )
 
 install(DIRECTORY
   launch
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+  DESTINATION share/${PROJECT_NAME}
 )
 
-install(FILES nodelet_plugins.xml
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+install(DIRECTORY
+  config
+  DESTINATION share/${PROJECT_NAME}
 )
 
-# if(TARGET ${PROJECT_NAME}-test)
-#   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
-# endif()
+install(DIRECTORY
+  scripts/boson
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+install(
+  PROGRAMS
+    scripts/camera_conf_node.py
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+ament_package()

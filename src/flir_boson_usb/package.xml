@@ -1,34 +1,30 @@
 <?xml version="1.0"?>
-<package format="2">
+<package format="3">
   <name>flir_boson_usb</name>
-  <version>1.2.1</version>
-  <description>A simple USB camera driver for the FLIR BOSON using OpenCV</description>
+  <version>2.0.0</version>
+  <description>FLIR Boson USB camera driver for ROS2</description>
+
+  <maintainer email="hursah@mail.uni-paderborn.de">Hürkan Sahin</maintainer>
   <license>MIT</license>
 
-  <maintainer email="software@autonomoustuff.com">AutonomouStuff Software Development Team</maintainer>
-  <author email="jdriscoll@autonomoustuff.com">Joe Driscoll</author>
-  <author email="jwhitley@autonomoustuff.com">Joshua Whitley</author>
+  <!-- ROS2 build system -->
+  <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <url type="website">http://wiki.ros.org/flir_boson_usb</url>
-  <url type="repository">https://github.com/astuff/flir_boson_usb</url>
-  <url type="bugtracker">https://github.com/astuff/flir_boson_usb/issues</url>
-
-  <buildtool_depend>catkin</buildtool_depend>
-
-  <build_depend>roslint</build_depend>
-  <build_depend>dynamic_reconfigure</build_depend>
-
-  <depend>roscpp</depend>
-  <depend>rospy</depend>
-  <depend>nodelet</depend>
+  <depend>rclcpp</depend>
+  <depend>sensor_msgs</depend>
   <depend>cv_bridge</depend>
   <depend>camera_info_manager</depend>
-  <depend>image_transport</depend>
-  <depend>sensor_msgs</depend>
+  <depend>opencv</depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
   
-  <exec_depend>dynamic_reconfigure</exec_depend>
-  
+  <exec_depend>python3</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
+  <exec_depend>python3-serial</exec_depend>
+
   <export>
-    <nodelet plugin="${prefix}/nodelet_plugins.xml"/>
+    <build_type>ament_cmake</build_type>
   </export>
 </package>
+
