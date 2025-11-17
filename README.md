@@ -5,6 +5,8 @@ For the **ROS2 version**, please see the [`ros2` branch](https://github.com/hurk
 
 Demo video for ROS2:  
 [![FLIR Boson ROS/ROS2 Demo](https://img.youtube.com/vi/U2WxlCpZ90o/hqdefault.jpg)](https://www.youtube.com/watch?v=U2WxlCpZ90o)
+
+
 Based on https://github.com/astuff/flir_boson_usb
 
 ROS package combined with Boson SDK package(https://flir.netx.net/file/asset/46046/original/attachment) so the camera parameters like in GUI for 8-bit image can be changable with using Dynamic Reconfiguration. Also, you can set thermal image output to 16 bit raw thermal image.
